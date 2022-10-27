@@ -120,7 +120,8 @@ int main() {
 		}
 
 		// game over
-		if (playerY > 700) {
+		if (playerY > 700) 
+		{
 			gameoverText.setPosition(30, 200);
 			scoreText.setPosition(150, 400);
 			goto gameover;
