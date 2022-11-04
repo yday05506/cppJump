@@ -12,7 +12,7 @@ int main() {
 
 	backgroundTexture.loadFromFile("images/ground_back.png");	// 배경 이미지
 	playerTexture.loadFromFile("images/character.png");	// 캐릭터 이미지
-	platformTexture.loadFromFile("images/step.png");	// 발판 이미지
+	platformTexture.loadFromFile("images/step2.png");	// 발판 이미지
 
 	sf::Sprite background(backgroundTexture);	// 배경
 	sf::Sprite player(playerTexture);	// 캐릭터
@@ -29,6 +29,7 @@ int main() {
 	scoreText.setFillColor(sf::Color::Red);
 	
 	sf::Text gameoverText;
+	gameoverText.setFont(font);
 	gameoverText.setString("Game Over");
 	gameoverText.setCharacterSize(80);
 	gameoverText.setFillColor(sf::Color::Red);
@@ -115,8 +116,8 @@ int main() {
 		window.draw(player);
 
 		for (size_t i = 0; i < 10; ++i) {
-			platform.setPosition(platformPosition[i].x, platformPosition[i].y);
-			window.draw(platform);
+			plat.setPosition(platformPosition[i].x, platformPosition[i].y);
+			window.draw(plat);
 		}
 
 		// game over
