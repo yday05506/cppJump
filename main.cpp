@@ -6,17 +6,20 @@
 int main() {
 	sf::RenderWindow window(sf::VideoMode(500, 700), "Jump", sf::Style::Close);
 	window.setFramerateLimit(60);
-	sf::Texture backgroundTexture;
-	sf::Texture playerTexture;
-	sf::Texture platformTexture;
+	sf::Texture backgroundTexture;	// 배경
+	sf::Texture playerTexture;	// 캐릭터
+	sf::Texture platformTexture;	// 발판
+	sf::Texture obstacleTexture;	// 장애물
 
 	backgroundTexture.loadFromFile("images/ground_back.png");	// 배경 이미지
 	playerTexture.loadFromFile("images/character.png");	// 캐릭터 이미지
 	platformTexture.loadFromFile("images/step2.png");	// 발판 이미지
+	obstacleTexture.loadFromFile("images/obstacle.png");	// 장애물 이미지
 
 	sf::Sprite background(backgroundTexture);	// 배경
 	sf::Sprite player(playerTexture);	// 캐릭터
 	sf::Sprite plat(platformTexture);	// 발판
+	sf::Sprite obstacle(obstacleTexture);	// 장애물
 
 	sf::RectangleShape gameoverBackground(sf::Vector2f(500, 700));
 	gameoverBackground.setFillColor(sf::Color::White);
@@ -40,14 +43,24 @@ int main() {
 	//sf::Sound sound;
 	//sound.setBuffer(buffer);
 
-	// 플랫폼 초기화
-	sf::Vector2u platformPosition[10];
-	std::uniform_int_distribution<unsigned> x(0, 500 - platformTexture.getSize().x);
-	std::uniform_int_distribution<unsigned> y(100, 700);
-	std::default_random_engine e(time(0));
-	for (size_t i = 0; i < 10; ++i) {
-		platformPosition[i].x = x(e);
-		platformPosition[i].y = y(e);
+	// 발판 초기화
+	sf::Vector2u platformPosition[8];
+	std::uniform_int_distribution<unsigned> platX(0, 500 - platformTexture.getSize().x);
+	std::uniform_int_distribution<unsigned> platY(100, 700);
+	std::default_random_engine platE(time(0));
+	for (size_t i = 0; i < 8; ++i) {
+		platformPosition[i].x = platX(platE);
+		platformPosition[i].y = platY(platE);
+	}
+
+	// 장애물 초기화
+	sf::Vector2u obstaclePosition[3];
+	std::uniform_int_distribution<unsigned> obX(0, 500 - obstacleTexture.getSize().x);
+	std::uniform_int_distribution<unsigned> obY(100, 700);
+	std::default_random_engine obE(time(0));
+	for (size_t i = 0; i < 3; i++) {
+		obstaclePosition[i].x = obX(obE);
+		obstaclePosition[i].y = obY(obE);
 	}
 
 	// 플레이어 위치 & 속도 줄이기
@@ -84,18 +97,30 @@ int main() {
 			scoreText.setString("Score: " + std::to_string(score));
 		}
 
+		// 장애물과 충돌 -> 아카노이드 때 썼던 교집합 충돌? 뭐시기. 그거 쓰래염
+		
+
 		// 플레이어 점프 매커니즘
 		dy += 0.2;
 		playerY += dy;
 
 		if (playerY < height) {
-			for (size_t i = 0; i < 10; ++i) {
+			for (size_t i = 0; i < 8; ++i) {
 				playerY = height;
 				platformPosition[i].y -= dy;
 				if (platformPosition[i].y > 700)	// 새로운 플랫폼을 맨 위에 두기
 				{
 					platformPosition[i].y = 0;
-					platformPosition[i].x = x(e);
+					platformPosition[i].x = platX(platE);
+				}
+			}
+			for (size_t i = 0; i < 3; ++i) {
+				playerY = height;
+				obstaclePosition[i].y -= dy;
+				if (obstaclePosition[i].y > 700)	// 새로운 장애물을 맨 위에 두기
+				{
+					obstaclePosition[i].y = 0;
+					obstaclePosition[i].x = obX(obE);
 				}
 			}
 		}
@@ -115,9 +140,14 @@ int main() {
 		window.draw(background);
 		window.draw(player);
 
-		for (size_t i = 0; i < 10; ++i) {
+		for (size_t i = 0; i < 8; ++i) {
 			plat.setPosition(platformPosition[i].x, platformPosition[i].y);
 			window.draw(plat);
+		}
+
+		for (size_t i = 0; i < 3; ++i) {
+			obstacle.setPosition(obstaclePosition[i].x, obstaclePosition[i].y);
+			window.draw(obstacle);
 		}
 
 		// game over
