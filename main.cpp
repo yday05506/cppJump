@@ -29,13 +29,18 @@ int main() {
 	sf::Text scoreText;
 	scoreText.setFont(font);
 	scoreText.setCharacterSize(50);
-	scoreText.setFillColor(sf::Color::Red);
+	scoreText.setFillColor(sf::Color::Black);
 	
 	sf::Text gameoverText;
 	gameoverText.setFont(font);
 	gameoverText.setString("Game Over");
 	gameoverText.setCharacterSize(80);
 	gameoverText.setFillColor(sf::Color::Red);
+
+	sf::Text hpText;
+	hpText.setFont(font);
+	hpText.setCharacterSize(50);
+	hpText.setFillColor(sf::Color::Black);
 
 	//sound
 	//sf::SoundBuffer buffer;
@@ -44,21 +49,21 @@ int main() {
 	//sound.setBuffer(buffer);
 
 	// 발판 초기화
-	sf::Vector2u platformPosition[8];
+	sf::Vector2u platformPosition[7];
 	std::uniform_int_distribution<unsigned> platX(0, 500 - platformTexture.getSize().x);
 	std::uniform_int_distribution<unsigned> platY(100, 700);
 	std::default_random_engine platE(time(0));
-	for (size_t i = 0; i < 8; ++i) {
+	for (size_t i = 0; i < 7; ++i) {
 		platformPosition[i].x = platX(platE);
 		platformPosition[i].y = platY(platE);
 	}
 
 	// 장애물 초기화
-	sf::Vector2u obstaclePosition[3];
+	sf::Vector2u obstaclePosition[2];
 	std::uniform_int_distribution<unsigned> obX(0, 500 - obstacleTexture.getSize().x);
 	std::uniform_int_distribution<unsigned> obY(100, 700);
 	std::default_random_engine obE(time(0));
-	for (size_t i = 0; i < 3; i++) {
+	for (size_t i = 0; i < 2; i++) {
 		obstaclePosition[i].x = obX(obE);
 		obstaclePosition[i].y = obY(obE);
 	}
@@ -69,6 +74,7 @@ int main() {
 	float dy = 0;
 	int height = 150;
 	int score = 0;
+	int hp = 3;
 
 	// 플레이어 바운딩 박스
 	const int PLAYER_LEFT_BOUNDING_BOX = 20;
@@ -86,6 +92,7 @@ int main() {
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 			playerX += 4;
 
+		// 플레이어가 바운더리를 나가면 창 돌아오기
 		if (playerX > 500)
 			playerX = 0;
 		if (playerX < -40)
@@ -94,8 +101,12 @@ int main() {
 		if (playerY == height && dy < (-1.62))
 		{
 			score += 1;
-			scoreText.setString("Score: " + std::to_string(score));
 		}
+
+		scoreText.setString("SCORE : " + std::to_string(score));
+		scoreText.setPosition(20, 0);
+		hpText.setString("HP : " + std::to_string(hp));
+		hpText.setPosition(20, 60);
 
 		// 장애물과 충돌 -> 아카노이드 때 썼던 교집합 충돌? 뭐시기. 그거 쓰래염
 		
@@ -105,7 +116,7 @@ int main() {
 		playerY += dy;
 
 		if (playerY < height) {
-			for (size_t i = 0; i < 8; ++i) {
+			for (size_t i = 0; i < 7; ++i) {
 				playerY = height;
 				platformPosition[i].y -= dy;
 				if (platformPosition[i].y > 700)	// 새로운 플랫폼을 맨 위에 두기
@@ -114,7 +125,7 @@ int main() {
 					platformPosition[i].x = platX(platE);
 				}
 			}
-			for (size_t i = 0; i < 3; ++i) {
+			for (size_t i = 0; i < 2; ++i) {
 				playerY = height;
 				obstaclePosition[i].y -= dy;
 				if (obstaclePosition[i].y > 700)	// 새로운 장애물을 맨 위에 두기
@@ -125,7 +136,7 @@ int main() {
 			}
 		}
 
-		for (size_t i = 0; i < 10; ++i)
+		for (size_t i = 0; i < 7; ++i)
 		{
 			if ((playerX + PLAYER_RIGHT_BOUNDING_BOX > platformPosition[i].x) && (playerX + PLAYER_LEFT_BOUNDING_BOX < platformPosition[i].x + platformTexture.getSize().x)
 				&& (playerY + PLAYER_BOTTOM_BOUNDING_BOX > platformPosition[i].y) && (playerY + PLAYER_BOTTOM_BOUNDING_BOX < platformPosition[i].y + platformTexture.getSize().y)
@@ -135,17 +146,28 @@ int main() {
 				dy = -10;
 			}
 		}
+		for (size_t i = 0; i < 2; ++i)
+		{
+			if ((playerX + PLAYER_RIGHT_BOUNDING_BOX > obstaclePosition[i].x) && (playerX + PLAYER_LEFT_BOUNDING_BOX < obstaclePosition[i].x + obstacleTexture.getSize().x)
+				&& (playerY + PLAYER_BOTTOM_BOUNDING_BOX > obstaclePosition[i].y) && (playerY + PLAYER_BOTTOM_BOUNDING_BOX < obstaclePosition[i].y + obstacleTexture.getSize().y)
+				&& (dy > 0))	// 플레이어가 떨어질 때 
+			{
+				//sound.play();
+				dy = -10;
+				hp -= 1;
+			}
+		}
 		player.setPosition(playerX, playerY);
 
 		window.draw(background);
 		window.draw(player);
 
-		for (size_t i = 0; i < 8; ++i) {
+		for (size_t i = 0; i < 7; ++i) {
 			plat.setPosition(platformPosition[i].x, platformPosition[i].y);
 			window.draw(plat);
 		}
 
-		for (size_t i = 0; i < 3; ++i) {
+		for (size_t i = 0; i < 2; ++i) {
 			obstacle.setPosition(obstaclePosition[i].x, obstaclePosition[i].y);
 			window.draw(obstacle);
 		}
@@ -157,7 +179,14 @@ int main() {
 			scoreText.setPosition(150, 400);
 			goto gameover;
 		}
+		if (hp == 0)
+		{
+			gameoverText.setPosition(30, 200);
+			scoreText.setPosition(150, 400);
+			goto gameover;
+		}
 		window.draw(scoreText);
+		window.draw(hpText);
 		window.display();
  	}
 
@@ -172,6 +201,7 @@ gameover:
 		window.draw(gameoverBackground);
 		window.draw(gameoverText);
 		window.draw(scoreText);
+		window.draw(hpText);
 		window.display();
 	}
 
