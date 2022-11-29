@@ -3,6 +3,9 @@
 #include <random>
 #include <ctime>
 
+#define WIDTH 500
+#define HEIGHT 700
+
 int main() {
 	sf::RenderWindow window(sf::VideoMode(500, 700), "Jump", sf::Style::Close);
 	window.setFramerateLimit(60);
@@ -14,7 +17,7 @@ int main() {
 	backgroundTexture.loadFromFile("images/ground_back.png");	// 배경 이미지
 	playerTexture.loadFromFile("images/character.png");	// 캐릭터 이미지
 	platformTexture.loadFromFile("images/step2.png");	// 발판 이미지
-	obstacleTexture.loadFromFile("images/obstacle.png");	// 장애물 이미지
+	obstacleTexture.loadFromFile("images/rock.png");	// 장애물 이미지
 
 	sf::Sprite background(backgroundTexture);	// 배경
 	sf::Sprite player(playerTexture);	// 캐릭터
@@ -28,7 +31,7 @@ int main() {
 	font.loadFromFile("font/EF_Diary.ttf");	// 폰트
 	sf::Text scoreText;
 	scoreText.setFont(font);
-	scoreText.setCharacterSize(50);
+	scoreText.setCharacterSize(30);
 	scoreText.setFillColor(sf::Color::Black);
 	
 	sf::Text gameoverText;
@@ -39,7 +42,7 @@ int main() {
 
 	sf::Text hpText;
 	hpText.setFont(font);
-	hpText.setCharacterSize(50);
+	hpText.setCharacterSize(30);
 	hpText.setFillColor(sf::Color::Black);
 
 	//sound
@@ -136,27 +139,18 @@ int main() {
 			}
 		}
 
-		for (size_t i = 0; i < 7; ++i)
-		{
-			if ((playerX + PLAYER_RIGHT_BOUNDING_BOX > platformPosition[i].x) && (playerX + PLAYER_LEFT_BOUNDING_BOX < platformPosition[i].x + platformTexture.getSize().x)
-				&& (playerY + PLAYER_BOTTOM_BOUNDING_BOX > platformPosition[i].y) && (playerY + PLAYER_BOTTOM_BOUNDING_BOX < platformPosition[i].y + platformTexture.getSize().y)
-				&& (dy > 0))	// 플레이어가 떨어질 때 
-			{
-				//sound.play();
-				dy = -10;
-			}
+		// 충돌 처리
+		if (player.getGlobalBounds().intersects(obstacle.getGlobalBounds())) { //intersects 교집합
+			//플레이어와 장애물의 충돌 시 튕기고 hp -1 감소
+			hp -= 1;
+			dy -= 10;
 		}
-		for (size_t i = 0; i < 2; ++i)
-		{
-			if ((playerX + PLAYER_RIGHT_BOUNDING_BOX > obstaclePosition[i].x) && (playerX + PLAYER_LEFT_BOUNDING_BOX < obstaclePosition[i].x + obstacleTexture.getSize().x)
-				&& (playerY + PLAYER_BOTTOM_BOUNDING_BOX > obstaclePosition[i].y) && (playerY + PLAYER_BOTTOM_BOUNDING_BOX < obstaclePosition[i].y + obstacleTexture.getSize().y)
-				&& (dy > 0))	// 플레이어가 떨어질 때 
-			{
-				//sound.play();
-				dy = -10;
-				hp -= 1;
-			}
+
+		if (player.getGlobalBounds().intersects(plat.getGlobalBounds())) { //intersects 교집합
+			//플레이어와 발판의 충돌 시 점프
+			dy -= 10;
 		}
+		
 		player.setPosition(playerX, playerY);
 
 		window.draw(background);
