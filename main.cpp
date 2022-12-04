@@ -13,16 +13,19 @@ int main() {
 	sf::Texture playerTexture;	// 캐릭터
 	sf::Texture platformTexture;	// 발판
 	sf::Texture obstacleTexture;	// 장애물
+	sf::Texture potionTexture;	// 포션
 
 	backgroundTexture.loadFromFile("images/ground_back.png");	// 배경 이미지
 	playerTexture.loadFromFile("images/character.png");	// 캐릭터 이미지
 	platformTexture.loadFromFile("images/step2.png");	// 발판 이미지
 	obstacleTexture.loadFromFile("images/rock.png");	// 장애물 이미지
+	potionTexture.loadFromFile("images/hp_potion.png");	// 포션 이미지
 
 	sf::Sprite background(backgroundTexture);	// 배경
 	sf::Sprite player(playerTexture);	// 캐릭터
 	sf::Sprite plat(platformTexture);	// 발판
 	sf::Sprite obstacle(obstacleTexture);	// 장애물
+	sf::Sprite potion(potionTexture);	// 포션
 
 	sf::RectangleShape gameoverBackground(sf::Vector2f(500, 700));
 	gameoverBackground.setFillColor(sf::Color::White);
@@ -46,10 +49,10 @@ int main() {
 	hpText.setFillColor(sf::Color::Black);
 
 	//sound
-	//sf::SoundBuffer buffer;
-	//buffer.loadFromFile("sound/jump.wav");
-	//sf::Sound sound;
-	//sound.setBuffer(buffer);
+	sf::SoundBuffer buffer;
+	buffer.loadFromFile("audios/MP_Blop.wav");
+	sf::Sound sound;
+	sound.setBuffer(buffer);
 
 	// 발판 초기화
 	sf::Vector2u platformPosition[7];
@@ -70,6 +73,14 @@ int main() {
 		obstaclePosition[i].x = obX(obE);
 		obstaclePosition[i].y = obY(obE);
 	}
+
+	// 포션 초기화
+	sf::Vector2u potionPosition;
+	std::uniform_int_distribution<unsigned> potionX(0, 500 - potionTexture.getSize().x);
+	std::uniform_int_distribution<unsigned> potionY(100, 700);
+	std::default_random_engine potionE(time(0));
+	potionPosition.x = potionX(potionE);
+	potionPosition.y = potionY(potionE);
 
 	// 플레이어 위치 & 속도 줄이기
 	int playerX = 250;
@@ -106,12 +117,21 @@ int main() {
 			score += 1;
 		}
 
+		if (player.getGlobalBounds().intersects(plat.getGlobalBounds()) && (dy < 10)) {
+			sound.play();
+			dy -= 10;
+		}
+
+		if (player.getGlobalBounds().intersects(obstacle.getGlobalBounds())) { //intersects 교집합
+			//플레이어와 장애물의 충돌 시 움직임이 느려짐 (끈끈이 이미지)
+			hp -= 1;
+			dy -= 10;
+		}
+
 		scoreText.setString("SCORE : " + std::to_string(score));
 		scoreText.setPosition(20, 0);
 		hpText.setString("HP : " + std::to_string(hp));
 		hpText.setPosition(20, 60);
-
-		// 장애물과 충돌 -> 아카노이드 때 썼던 교집합 충돌? 뭐시기. 그거 쓰래염
 		
 
 		// 플레이어 점프 매커니즘
@@ -137,18 +157,13 @@ int main() {
 					obstaclePosition[i].x = obX(obE);
 				}
 			}
-		}
-
-		// 충돌 처리
-		if (player.getGlobalBounds().intersects(obstacle.getGlobalBounds())) { //intersects 교집합
-			//플레이어와 장애물의 충돌 시 튕기고 hp -1 감소
-			hp -= 1;
-			dy -= 10;
-		}
-
-		if (player.getGlobalBounds().intersects(plat.getGlobalBounds())) { //intersects 교집합
-			//플레이어와 발판의 충돌 시 점프
-			dy -= 10;
+			playerY = height;
+			potionPosition.y -= dy;
+			if (potionPosition.y > 700)	// 새로운 포션을 맨 위에 두기
+			{
+				potionPosition.y = 0;
+				potionPosition.x = potionX(potionE);
+			}
 		}
 		
 		player.setPosition(playerX, playerY);
