@@ -88,7 +88,7 @@ int main() {
 	float dy = 0;
 	int height = 150;
 	int score = 0;
-	int hp = 3;
+	int hp = 100;
 
 	// 플레이어 바운딩 박스
 	const int PLAYER_LEFT_BOUNDING_BOX = 20;
@@ -115,11 +115,6 @@ int main() {
 		if (playerY == height && dy < (-1.62))
 		{
 			score += 1;
-		}
-
-		if (player.getGlobalBounds().intersects(plat.getGlobalBounds()) && (dy < 10)) {
-			sound.play();
-			dy -= 10;
 		}
 
 		if (player.getGlobalBounds().intersects(obstacle.getGlobalBounds())) { //intersects 교집합
@@ -157,6 +152,18 @@ int main() {
 					obstaclePosition[i].x = obX(obE);
 				}
 			}
+
+			for (size_t i = 0; i < 7; ++i)
+			{
+				if ((playerX + PLAYER_RIGHT_BOUNDING_BOX > platformPosition[i].x) && (playerX + PLAYER_LEFT_BOUNDING_BOX < platformPosition[i].x + platformTexture.getSize().x)
+					&& (playerY + PLAYER_BOTTOM_BOUNDING_BOX > platformPosition[i].y) && (playerY + PLAYER_BOTTOM_BOUNDING_BOX < platformPosition[i].y + platformTexture.getSize().y)
+					&& (dy > 0))	// 플레이어가 떨어질 때 
+				{
+					sound.play();
+					dy = -10;
+				}
+			}
+
 			playerY = height;
 			potionPosition.y -= dy;
 			if (potionPosition.y > 700)	// 새로운 포션을 맨 위에 두기
