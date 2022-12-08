@@ -16,13 +16,15 @@ int main() {
 	Texture platTexture;
 	Texture obstacleTexture;
 	Texture healTexture;
+	Texture mortarTexture;
 
 	// 이미지 파일 불러오기
-	backTexture.loadFromFile("images/background.png");
+	backTexture.loadFromFile("images/background2.png");
 	playerTexture.loadFromFile("images/rabbit2.png");
 	platTexture.loadFromFile("images/step4.png");
 	obstacleTexture.loadFromFile("images/rock.png");
 	healTexture.loadFromFile("images/hp_potion.png");
+	mortarTexture.loadFromFile("images/mortar.png");
 
 	// 질감 넣기
 	Sprite background(backTexture);
@@ -30,6 +32,7 @@ int main() {
 	Sprite plat(platTexture);
 	Sprite obstacle(obstacleTexture);
 	Sprite heal(healTexture);
+	Sprite mortar(mortarTexture);
 
 	// 게임오버 배경 넣기
 	RectangleShape gameoverBackground(Vector2f(500, 700));
@@ -43,7 +46,7 @@ int main() {
 	Text scoreText;	// 점수 텍스트
 	scoreText.setFont(font);
 	scoreText.setCharacterSize(30);
-	scoreText.setFillColor(Color::Black);
+	scoreText.setFillColor(Color::White);
 
 	Text gameoverText;	// 게임 오버 텍스트
 	gameoverText.setFont(font);
@@ -54,7 +57,7 @@ int main() {
 	Text hpText;	// 체력 텍스트
 	hpText.setFont(font);
 	hpText.setCharacterSize(30);
-	hpText.setFillColor(Color::Black);
+	hpText.setFillColor(Color::White);
 
 	// 사운드
 	SoundBuffer buffer;
@@ -93,6 +96,12 @@ int main() {
 	healPosition.x = hx(he);
 	healPosition.y = hy(he);
 
+	// 절구 초기화
+	Vector2u mortarPosition;
+	uniform_int_distribution<unsigned> mx(0, 500 - mortarTexture.getSize().x);
+	uniform_int_distribution<unsigned> my(100, 700);
+	default_random_engine me(time(0));
+
 	// 플레이어의 위치와 중력
 	int playerX = 250;
 	int playerY = 151;
@@ -101,7 +110,7 @@ int main() {
 	int score = 0;	// 점수
 	int hp = 3;	// 체력
 
-	// 플레이어 바운딩 박스. 사이즈가 달라지면 바꾸어야 함
+	// 플레이어 바운딩 박스. 사이즈가 달라지면 바꿔야 함
 	const int PLAYER_LEFT_BOUNDING_BOX = 20;
 	const int PLAYER_RIGHT_BOUNDING_BOX = 60;
 	const int PLAYER_BOTTOM_BOUNDING_BOX = 70;
@@ -125,21 +134,22 @@ int main() {
 			playerX = window.getSize().x - playerTexture.getSize().x;
 
 		// 점수
-		// dy -1.60001은 플레이어가 발판에 서서 더 이상 올라가지 않는 속도
+		// dy -1.60001은 플레이어가 발판에 서서 더 이상 올라가지 않음
 		// 이 상황에선 점수가 올라가지 않음
 		if (playerY == height && dy < (-1.62)) {
 			score += 1;
-			scoreText.setString("SCORE : " + to_string(score));
-			scoreText.setPosition(20, 0);
-			hpText.setString("HP : " + to_string(hp));
-			hpText.setPosition(20, 60);
+			scoreText.setString("SCORE : " + to_string(score));	// 점수 텍스트 설정
+			scoreText.setPosition(20, 0);	// 점수 텍스트 위치 설정	
+			hpText.setString("HP : " + to_string(hp));	// HP 텍스트 설정
+			hpText.setPosition(20, 60);	// HP 텍스트 위치 설정
 		}
 
 		// 플레이어 점프 매커니즘
-		dy += 0.2;
-		playerY += dy;
+		dy += 0.2;	// 높이 0.2씩
+		playerY += dy;	// 플레이어 올라가기
 
 		if (playerY < height) {
+			// 발판
 			for (size_t i = 0; i < 10; ++i) {
 				playerY = height;
 				platPosition[i].y -= dy;	// 수직 변환
@@ -150,6 +160,7 @@ int main() {
 				}
 			}
 
+			// 장애물
 			for (size_t i = 0; i < 2; ++i) {
 				playerY = height; 
 				obstaclePosition[i].y -= dy;	// 수직 변환
@@ -160,6 +171,7 @@ int main() {
 				}
 			}
 
+			// 힐 포션
 			playerY = height;
 			healPosition.y -= dy;	// 수직 변환
 			if (healPosition.y > 700)	// 새 포션을 위에 두기
@@ -167,9 +179,19 @@ int main() {
 				healPosition.y = 0;
 				healPosition.x = hx(he);
 			}
+
+			// 절구
+			playerY = height;
+			mortarPosition.y -= dy;	// 수직 변환
+			if (mortarPosition.y > 700)	// 새 포션을 위에 두기
+			{
+				mortarPosition.y = 0;
+				mortarPosition.x = mx(me);
+			}
 		}
 
 		// 점프 감지
+		// 발판
 		for (size_t i = 0; i < 10; ++i) {
 			if ((playerX + PLAYER_RIGHT_BOUNDING_BOX > platPosition[i].x) && (playerX + PLAYER_LEFT_BOUNDING_BOX < platPosition[i].x + platTexture.getSize().x)	// 플레이어의 수평 범위가 발판을 건드릴 수 있음
 				&& (playerY + PLAYER_BOTTOM_BOUNDING_BOX > platPosition[i].y) && (playerY + PLAYER_BOTTOM_BOUNDING_BOX < platPosition[i].y + platTexture.getSize().y)	// 플레이어의 수직 범위가 발판을 건드릴 수 있음
@@ -179,6 +201,7 @@ int main() {
 				dy -= 17;
 			}
 		}
+		// 장애물
 		for (size_t i = 0; i < 2; ++i) {
 			if ((playerX + PLAYER_RIGHT_BOUNDING_BOX > obstaclePosition[i].x) && (playerX + PLAYER_LEFT_BOUNDING_BOX < obstaclePosition[i].x + obstacleTexture.getSize().x)	// 플레이어의 수평 범위가 장애물을 건드릴 수 있음
 				&& (playerY + PLAYER_BOTTOM_BOUNDING_BOX > obstaclePosition[i].y) && (playerY + PLAYER_BOTTOM_BOUNDING_BOX < obstaclePosition[i].y + obstacleTexture.getSize().y)	// 플레이어의 수직 범위가 장애물을 건드릴 수 있음
@@ -189,13 +212,22 @@ int main() {
 				dy -= 17;
 			}
 		}
+		// 힐 포션
 		if ((playerX + PLAYER_RIGHT_BOUNDING_BOX > healPosition.x) && (playerX + PLAYER_LEFT_BOUNDING_BOX < healPosition.x + healTexture.getSize().x)	// 플레이어의 수평 범위가 포션을 건드릴 수 있음
 			&& (playerY + PLAYER_BOTTOM_BOUNDING_BOX > healPosition.y) && (playerY + PLAYER_BOTTOM_BOUNDING_BOX < healPosition.y + healTexture.getSize().y)	// 플레이어의 수직 범위가 포션을 건드릴 수 있음
 			&& (dy > 0))	// 플레이어가 떨어질 때
 		{
 			sound.play();
 			hp += 1;
-			dy -= 16;
+			dy -= 17;
+		}
+		// 절구
+		if ((playerX + PLAYER_RIGHT_BOUNDING_BOX > mortarPosition.x) && (playerX + PLAYER_LEFT_BOUNDING_BOX < mortarPosition.x + mortarTexture.getSize().x)	// 플레이어의 수평 범위가 절구를 건드릴 수 있음
+			&& (playerY + PLAYER_BOTTOM_BOUNDING_BOX > mortarPosition.y) && (playerY + PLAYER_BOTTOM_BOUNDING_BOX < mortarPosition.y + mortarTexture.getSize().y)	// 플레이어의 수직 범위가 절구를 건드릴 수 있음
+			&& (dy > 0))	// 플레이어가 떨어질 때
+		{
+			sound.play();
+			dy -= 35;	// 밟으면 높이 올라감
 		}
 		player.setPosition(playerX, playerY);
 
@@ -218,11 +250,16 @@ int main() {
 		heal.setPosition(healPosition.x, healPosition.y);
 		window.draw(heal);
 
+		// 절구 그리기
+		mortar.setPosition(mortarPosition.x, mortarPosition.y);
+		window.draw(mortar);
+
 		// game over
 		if (playerY > 700 || hp == 0)
 		{
 			gameoverText.setPosition(30, 200);
 			scoreText.setPosition(150, 400);
+			scoreText.setFillColor(Color::Black);
 			hpText.setPosition(150, 450);
 			goto gameover;
 		}
