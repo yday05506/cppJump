@@ -19,7 +19,7 @@ int main() {
 
 	// 이미지 파일 불러오기
 	backTexture.loadFromFile("images/background.png");
-	playerTexture.loadFromFile("images/character.png");
+	playerTexture.loadFromFile("images/rabbit2.png");
 	platTexture.loadFromFile("images/step4.png");
 	obstacleTexture.loadFromFile("images/rock.png");
 	healTexture.loadFromFile("images/hp_potion.png");
@@ -176,7 +176,7 @@ int main() {
 				&& (dy > 0))	// 플레이어가 떨어질 때
 			{
 				sound.play();
-				dy -= 16;
+				dy -= 17;
 			}
 		}
 		for (size_t i = 0; i < 2; ++i) {
@@ -186,7 +186,7 @@ int main() {
 			{
 				sound.play();
 				hp -= 1;
-				dy -= 16;
+				dy -= 17;
 			}
 		}
 		if ((playerX + PLAYER_RIGHT_BOUNDING_BOX > healPosition.x) && (playerX + PLAYER_LEFT_BOUNDING_BOX < healPosition.x + healTexture.getSize().x)	// 플레이어의 수평 범위가 포션을 건드릴 수 있음
