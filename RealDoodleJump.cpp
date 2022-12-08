@@ -35,29 +35,29 @@ int main() {
 	Sprite mortar(mortarTexture);
 
 	// 게임오버 배경 넣기
-	RectangleShape gameoverBackground(Vector2f(500, 700));
-	gameoverBackground.setFillColor(Color::White);
+	RectangleShape gameoverBackground(Vector2f(500, 700));	// 사이즈 설정
+	gameoverBackground.setFillColor(Color::White);	// 배경 하얀색으로 칠하기
 
 	// 폰트
 	Font font;
-	font.loadFromFile("font/EF_Diary.ttf");
+	font.loadFromFile("font/EF_Diary.ttf");	// 폰트 파일 불러오기
 
 	// 텍스트
 	Text scoreText;	// 점수 텍스트
-	scoreText.setFont(font);
-	scoreText.setCharacterSize(30);
-	scoreText.setFillColor(Color::White);
+	scoreText.setFont(font);	// 폰트 적용
+	scoreText.setCharacterSize(30);	// 텍스트 사이즈 설정
+	scoreText.setFillColor(Color::White);	// 텍스트 색상 설정
 
 	Text gameoverText;	// 게임 오버 텍스트
-	gameoverText.setFont(font);
-	gameoverText.setString("Game Over");
-	gameoverText.setCharacterSize(80);
-	gameoverText.setFillColor(Color::Red);
+	gameoverText.setFont(font);	// 폰트 적용하기
+	gameoverText.setString("Game Over");	// 문자열 설정
+	gameoverText.setCharacterSize(80);	// 텍스트 사이즈 설정
+	gameoverText.setFillColor(Color::Red);	// 텍스트 색상 설정
 
 	Text hpText;	// 체력 텍스트
-	hpText.setFont(font);
-	hpText.setCharacterSize(30);
-	hpText.setFillColor(Color::White);
+	hpText.setFont(font);	// 폰트 적용하기
+	hpText.setCharacterSize(30);	// 텍스트 사이즈 설정
+	hpText.setFillColor(Color::White);	// 텍스트 색상 설정
 
 	// 사운드
 	SoundBuffer buffer;
@@ -69,7 +69,7 @@ int main() {
 	Vector2u platPosition[10];
 	uniform_int_distribution<unsigned> px(0, 500 - platTexture.getSize().x);
 	uniform_int_distribution<unsigned> py(100, 700);
-	default_random_engine pe(time(0));
+	default_random_engine pe(time(0));	// 랜덤
 
 	for (size_t i = 0; i < 10; ++i) {
 		platPosition[i].x = px(pe);
@@ -80,7 +80,7 @@ int main() {
 	Vector2u obstaclePosition[2];
 	uniform_int_distribution<unsigned> obx(0, 500 - obstacleTexture.getSize().x);
 	uniform_int_distribution<unsigned> oby(100, 700);
-	default_random_engine obe(time(0));
+	default_random_engine obe(time(0));	// 랜덤
 
 	for (size_t i = 0; i < 2; ++i) {
 		obstaclePosition[i].x = obx(obe);
@@ -91,7 +91,7 @@ int main() {
 	Vector2u healPosition;
 	uniform_int_distribution<unsigned> hx(0, 500 - healTexture.getSize().x);
 	uniform_int_distribution<unsigned> hy(100, 700);
-	default_random_engine he(time(0));
+	default_random_engine he(time(0));	// 랜덤
 
 	healPosition.x = hx(he);
 	healPosition.y = hy(he);
@@ -100,7 +100,7 @@ int main() {
 	Vector2u mortarPosition;
 	uniform_int_distribution<unsigned> mx(0, 500 - mortarTexture.getSize().x);
 	uniform_int_distribution<unsigned> my(100, 700);
-	default_random_engine me(time(0));
+	default_random_engine me(time(0));	// 랜덤
 
 	// 플레이어의 위치와 중력
 	int playerX = 250;
@@ -208,7 +208,7 @@ int main() {
 				&& (dy > 0))	// 플레이어가 떨어질 때
 			{
 				sound.play();
-				hp -= 1;
+				hp -= 1;	// 밟으면 체력 -1
 				dy -= 17;
 			}
 		}
@@ -218,7 +218,7 @@ int main() {
 			&& (dy > 0))	// 플레이어가 떨어질 때
 		{
 			sound.play();
-			hp += 1;
+			hp += 1;	// 밟으면 체력 +1
 			dy -= 17;
 		}
 		// 절구
@@ -257,15 +257,15 @@ int main() {
 		// game over
 		if (playerY > 700 || hp == 0)
 		{
-			gameoverText.setPosition(30, 200);
-			scoreText.setPosition(150, 400);
-			scoreText.setFillColor(Color::Black);
-			hpText.setPosition(150, 450);
-			goto gameover;
+			gameoverText.setPosition(30, 200);	// 게임오버 텍스트 위치 설정
+			scoreText.setPosition(150, 400);	// 점수 텍스트 위치 설정
+			scoreText.setFillColor(Color::Black);	// 점수 텍스트 색상 변경
+			hpText.setPosition(150, 450);	// hp 텍스트 위치 설정
+			goto gameover;	// 게임오버 화면으로 가기 → goto 쓰지 말 것. 로직이 꼬일 수 있음
 		}
-		window.draw(scoreText);
-		window.draw(hpText);
-		window.display();
+		window.draw(scoreText);	// 점수 텍스트 그리기
+		window.draw(hpText);	// 체력 텍스트 그리기
+		window.display();	
 	}
 
 	// Game Over
@@ -276,9 +276,9 @@ gameover:
 			if (event.type == Event::Closed)
 				window.close();
 		}
-		window.draw(gameoverBackground);
-		window.draw(gameoverText);
-		window.draw(scoreText);
+		window.draw(gameoverBackground);	// 게임오버 배경 그리기
+		window.draw(gameoverText);	// 게임오버 텍스트 그리기
+		window.draw(scoreText);	// 점수 텍스트 그리기
 		window.display();
 	}
 	return 0;
